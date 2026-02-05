@@ -15,6 +15,7 @@ import id.teratai.dompet.data.TransactionEntity
 import id.teratai.dompet.data.TransactionRepository
 import id.teratai.dompet.parse.ReceiptHeuristicParser
 import id.teratai.dompet.util.Money
+import id.teratai.dompet.util.ImageRotate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -83,6 +84,47 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
                 }
             }
         )
+    }
+
+
+    private fun rerunOcr(uri: Uri) {
+        val context = getApplication<Application>()
+        _uiState.value = ReceiptScanUiState.OcrRunning
+        val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+        val image = InputImage.fromFilePath(context, uri)
+        recognizer.process(image)
+            .addOnSuccessListener { result ->
+                viewModelScope.launch(Dispatchers.Default) {
+                    val parsed = ReceiptHeuristicParser.parse(result.text)
+                    val draft = ReceiptDraft(
+                        merchant = parsed.merchant.orEmpty(),
+                        dateIso = parsed.date.orEmpty(),
+                        total = parsed.total.orEmpty()
+                    )
+                    _uiState.value = ReceiptScanUiState.Done(
+                        imageUri = uri,
+                        ocrText = result.text,
+                        draft = draft,
+                        parsedSummary = parsed.pretty()
+                    )
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("ReceiptScanner", "OCR failed", e)
+                _uiState.value = ReceiptScanUiState.Error("OCR error: ${e.message}")
+            }
+    }
+
+    fun rotate90AndRerunOcr() {
+        val state = _uiState.value
+        if (state !is ReceiptScanUiState.Done) return
+        val uri = state.imageUri ?: return
+        val context = getApplication<Application>()
+        val rotated = ImageRotate.rotate90AndSave(context, uri) ?: run {
+            _uiState.value = ReceiptScanUiState.Error("Rotate failed")
+            return
+        }
+        rerunOcr(rotated)
     }
 
     fun saveDraft(draft: ReceiptDraft) {

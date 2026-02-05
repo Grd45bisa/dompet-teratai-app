@@ -147,6 +147,13 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
                 Text("Ulangi")
             }
 
+            OutlinedButton(
+                onClick = { vm.rotate90AndRerunOcr() },
+                enabled = uiState is ReceiptScanUiState.Done
+            ) {
+                Text("Rotate")
+            }
+
             Button(
                 onClick = { showReview = true },
                 enabled = uiState is ReceiptScanUiState.Done

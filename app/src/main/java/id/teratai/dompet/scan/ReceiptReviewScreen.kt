@@ -56,6 +56,8 @@ fun ReceiptReviewScreen(
             )
         }
 
+        Text("Kalau struk miring, balik ke Scan dan tekan Rotate lalu Scan lagi.")
+
         Text("Tanggal pakai format yyyy-MM-dd. Total isi angka (contoh 12345.67).")
 
         OutlinedTextField(
