@@ -101,6 +101,13 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
         rerunOcr(uri)
     }
 
+    fun reOcr() {
+        val state = _uiState.value
+        if (state !is ReceiptScanUiState.Done) return
+        val uri = state.imageUri ?: return
+        rerunOcr(uri)
+    }
+
     fun rotate90AndRerunOcr() {
         val state = _uiState.value
         if (state !is ReceiptScanUiState.Done) return
