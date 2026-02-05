@@ -14,6 +14,7 @@ import id.teratai.dompet.data.DatabaseProvider
 import id.teratai.dompet.data.TransactionEntity
 import id.teratai.dompet.data.TransactionRepository
 import id.teratai.dompet.parse.ReceiptHeuristicParser
+import id.teratai.dompet.util.Money
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -90,7 +91,7 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
 
         val merchant = draft.merchant.ifBlank { "Unknown" }
         val dateIso = draft.dateIso.ifBlank { "" }
-        val total = draft.total.ifBlank { "0" }
+        val total = Money.normalize(draft.total).ifBlank { "0" }
 
         viewModelScope.launch(Dispatchers.IO) {
             repo.insert(

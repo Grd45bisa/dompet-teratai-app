@@ -25,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewModelScope
 import id.teratai.dompet.data.DatabaseProvider
 import id.teratai.dompet.data.TransactionEntity
+import id.teratai.dompet.util.Money
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -81,7 +82,7 @@ fun TransactionDetailScreen(
             val t = tx!!
             Text("Merchant: ${t.merchant}")
             Text("Date: ${t.dateIso}")
-            Text("Total: ${t.total}")
+            Text("Total: ${Money.formatIdr(t.total)}")
 
             if (!t.imageUri.isNullOrBlank()) {
                 AsyncImage(

@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import id.teratai.dompet.util.Money
 
 @Composable
 fun ReceiptReviewScreen(
@@ -36,7 +37,8 @@ fun ReceiptReviewScreen(
     var total by remember { mutableStateOf(initial.total) }
 
     val dateOk = dateIso.isBlank() || Regex("\\d{4}-\\d{2}-\\d{2}").matches(dateIso)
-    val totalOk = total.isNotBlank() && total.toDoubleOrNull() != null
+    val totalNorm = Money.normalize(total)
+    val totalOk = totalNorm.isNotBlank() && totalNorm.toDoubleOrNull() != null
 
     Column(
         modifier = Modifier
@@ -84,7 +86,11 @@ fun ReceiptReviewScreen(
             label = { Text("Total") },
             isError = total.isNotBlank() && !totalOk,
             supportingText = {
-                if (total.isNotBlank() && !totalOk) Text("Total harus angka. Contoh: 12345.67")
+                if (total.isNotBlank() && !totalOk) {
+                    Text("Total harus angka. Contoh: 12345.67")
+                } else if (totalOk) {
+                    Text("Normalized: ${Money.normalize(total)} • ${Money.formatIdr(Money.normalize(total))}")
+                }
             },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
@@ -101,7 +107,7 @@ fun ReceiptReviewScreen(
                         ReceiptDraft(
                             merchant = merchant.trim(),
                             dateIso = dateIso.trim(),
-                            total = total.trim()
+                            total = Money.normalize(total)
                         )
                     )
                 }

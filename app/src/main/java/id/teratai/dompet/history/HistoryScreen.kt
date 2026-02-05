@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import id.teratai.dompet.data.TransactionEntity
+import id.teratai.dompet.util.Money
 
 @Composable
 fun HistoryScreen(
@@ -57,7 +58,7 @@ private fun TransactionRow(tx: TransactionEntity, onClick: () -> Unit) {
             Text(tx.merchant.ifBlank { "Unknown" }, style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(tx.dateIso.ifBlank { "(no date)" }, style = MaterialTheme.typography.bodySmall)
-                Text("Total: ${tx.total}", style = MaterialTheme.typography.bodySmall)
+                Text("Total: ${Money.formatIdr(tx.total)}", style = MaterialTheme.typography.bodySmall)
             }
         }
     }
