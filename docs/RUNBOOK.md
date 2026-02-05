@@ -21,3 +21,9 @@
 - Receipt image persisted in internal storage and displayed in review/detail
 - Total normalized + displayed as IDR currency format
 - Human-readable timestamp for saved transactions
+
+## Phase 2.1 (image pre-processing)
+- Rotate 90° + rerun OCR
+- Resize/compress before OCR
+- Manual crop flow + rerun OCR
+- Re-OCR button (rerun OCR without recapturing)
