@@ -1,6 +1,7 @@
 package id.teratai.dompet.scan
 
 import android.view.ViewGroup
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -33,11 +35,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.activity.compose.rememberLauncherForActivityResult
+import com.canhub.cropper.CropImageView
 
 @Composable
 fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
@@ -57,6 +59,7 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
             val uri = result.uriContent
             if (uri != null) vm.rerunOcrForUri(uri)
         }
+        // if cancelled or failed, do nothing (no error popups)
     }
 
     var showReview by rememberSaveable { mutableStateOf(false) }
@@ -143,8 +146,13 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
             }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Actions row 1
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             Button(
+                modifier = Modifier.weight(1f),
                 onClick = { vm.captureAndOcr(imageCapture) },
                 enabled = uiState !is ReceiptScanUiState.Capturing && uiState !is ReceiptScanUiState.OcrRunning
             ) {
@@ -152,13 +160,21 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
             }
 
             OutlinedButton(
+                modifier = Modifier.weight(1f),
                 onClick = { vm.reset() },
                 enabled = uiState is ReceiptScanUiState.Done || uiState is ReceiptScanUiState.Error
             ) {
                 Text("Ulangi")
             }
+        }
 
+        // Actions row 2
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             OutlinedButton(
+                modifier = Modifier.weight(1f),
                 onClick = {
                     val done = uiState as? ReceiptScanUiState.Done
                     val uri = done?.imageUri
@@ -167,7 +183,7 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
                             CropImageContractOptions(
                                 uri,
                                 CropImageOptions(
-                                    guidelines = com.canhub.cropper.CropImageView.Guidelines.ON
+                                    guidelines = CropImageView.Guidelines.ON
                                 )
                             )
                         )
@@ -179,6 +195,7 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
             }
 
             OutlinedButton(
+                modifier = Modifier.weight(1f),
                 onClick = { vm.rotate90AndRerunOcr() },
                 enabled = uiState is ReceiptScanUiState.Done
             ) {
@@ -186,6 +203,7 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
             }
 
             OutlinedButton(
+                modifier = Modifier.weight(1f),
                 onClick = { vm.reOcr() },
                 enabled = uiState is ReceiptScanUiState.Done
             ) {
@@ -193,6 +211,7 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
             }
 
             Button(
+                modifier = Modifier.weight(1f),
                 onClick = { showReview = true },
                 enabled = uiState is ReceiptScanUiState.Done
             ) {
