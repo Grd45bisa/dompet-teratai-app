@@ -27,3 +27,5 @@
 - Resize/compress before OCR
 - Manual crop flow + rerun OCR
 - Re-OCR button (rerun OCR without recapturing)
+
+- OCR raw text is collapsible in Scan and Detail screens
