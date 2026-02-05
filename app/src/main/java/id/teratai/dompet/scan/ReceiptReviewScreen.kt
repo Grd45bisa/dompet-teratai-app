@@ -1,5 +1,6 @@
 package id.teratai.dompet.scan
 
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,10 +22,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 
 @Composable
 fun ReceiptReviewScreen(
     initial: ReceiptDraft,
+    imageUri: Uri?,
     onBack: () -> Unit,
     onSave: (ReceiptDraft) -> Unit,
 ) {
@@ -42,6 +45,15 @@ fun ReceiptReviewScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("Review & Edit", style = MaterialTheme.typography.titleLarge)
+
+        if (imageUri != null) {
+            AsyncImage(
+                model = imageUri,
+                contentDescription = "Receipt image",
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
         Text("Tanggal pakai format yyyy-MM-dd. Total isi angka (contoh 12345.67).")
 
         OutlinedTextField(

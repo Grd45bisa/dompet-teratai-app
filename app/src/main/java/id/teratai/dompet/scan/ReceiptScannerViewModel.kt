@@ -39,7 +39,7 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
         val context = getApplication<Application>()
         _uiState.value = ReceiptScanUiState.Capturing
 
-        val outDir = File(context.cacheDir, "captures").apply { mkdirs() }
+        val outDir = File(context.filesDir, "receipts").apply { mkdirs() }
         val outFile = File(outDir, "receipt_${System.currentTimeMillis()}.jpg")
         val outputOptions = ImageCapture.OutputFileOptions.Builder(outFile).build()
 

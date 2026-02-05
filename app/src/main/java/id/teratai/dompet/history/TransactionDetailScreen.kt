@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import coil.compose.AsyncImage
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
@@ -81,6 +82,15 @@ fun TransactionDetailScreen(
             Text("Merchant: ${t.merchant}")
             Text("Date: ${t.dateIso}")
             Text("Total: ${t.total}")
+
+            if (!t.imageUri.isNullOrBlank()) {
+                AsyncImage(
+                    model = t.imageUri,
+                    contentDescription = "Receipt image",
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                )
+            }
 
             Text("OCR Raw", style = MaterialTheme.typography.titleMedium)
             Text(t.rawOcrText, style = MaterialTheme.typography.bodySmall)
