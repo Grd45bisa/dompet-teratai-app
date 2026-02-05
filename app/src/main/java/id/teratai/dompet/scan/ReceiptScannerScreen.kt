@@ -71,11 +71,9 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
         ReceiptReviewScreen(
             initial = done.draft,
             onBack = { showReview = false },
-            onSave = {
-                // Phase 1.3 will persist to Room.
-                // For now, we just go back to scan.
+            onSave = { saved ->
+                vm.saveDraft(saved)
                 showReview = false
-                vm.reset()
             }
         )
         return

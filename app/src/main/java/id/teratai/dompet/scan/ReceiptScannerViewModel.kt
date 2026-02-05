@@ -10,6 +10,9 @@ import androidx.lifecycle.viewModelScope
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import id.teratai.dompet.data.DatabaseProvider
+import id.teratai.dompet.data.TransactionEntity
+import id.teratai.dompet.data.TransactionRepository
 import id.teratai.dompet.parse.ReceiptHeuristicParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +25,11 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _uiState = MutableStateFlow<ReceiptScanUiState>(ReceiptScanUiState.Idle)
     val uiState: StateFlow<ReceiptScanUiState> = _uiState.asStateFlow()
+
+    private val repo: TransactionRepository by lazy {
+        val db = DatabaseProvider.get(getApplication())
+        TransactionRepository(db.transactionDao())
+    }
 
     fun reset() {
         _uiState.value = ReceiptScanUiState.Idle
@@ -74,5 +82,29 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
                 }
             }
         )
+    }
+
+    fun saveDraft(draft: ReceiptDraft) {
+        val state = _uiState.value
+        if (state !is ReceiptScanUiState.Done) return
+
+        val merchant = draft.merchant.ifBlank { "Unknown" }
+        val dateIso = draft.dateIso.ifBlank { "" }
+        val total = draft.total.ifBlank { "0" }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            repo.insert(
+                TransactionEntity(
+                    merchant = merchant,
+                    dateIso = dateIso,
+                    total = total,
+                    rawOcrText = state.ocrText,
+                    imageUri = state.imageUri?.toString(),
+                    createdAtMs = System.currentTimeMillis()
+                )
+            )
+            // after save, reset scan
+            _uiState.value = ReceiptScanUiState.Idle
+        }
     }
 }
