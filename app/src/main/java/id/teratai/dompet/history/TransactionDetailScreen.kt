@@ -28,6 +28,7 @@ import id.teratai.dompet.data.DatabaseProvider
 import id.teratai.dompet.data.TransactionEntity
 import id.teratai.dompet.util.Money
 import id.teratai.dompet.util.TimeFmt
+import id.teratai.dompet.util.DateFmt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -102,7 +103,7 @@ fun TransactionDetailScreen(
         } else {
             val t = tx!!
             Text("Merchant: ${t.merchant}")
-            Text("Date: ${t.dateIso}")
+            Text("Date: ${DateFmt.formatIso(t.dateIso)}")
             Text("Total: ${Money.formatIdr(t.total)}")
             Text("Saved: ${TimeFmt.formatCreatedAt(t.createdAtMs)}")
 

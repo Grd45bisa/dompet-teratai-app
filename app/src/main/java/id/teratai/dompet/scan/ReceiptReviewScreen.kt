@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import id.teratai.dompet.util.DateFmt
 import id.teratai.dompet.util.Money
 
 @Composable
@@ -46,7 +47,7 @@ fun ReceiptReviewScreen(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Review & Edit", style = MaterialTheme.typography.titleLarge)
+        Text("Review transaksi", style = MaterialTheme.typography.titleLarge)
 
         if (imageUri != null) {
             AsyncImage(
@@ -56,9 +57,10 @@ fun ReceiptReviewScreen(
             )
         }
 
-        Text("Kalau struk miring, balik ke Scan dan tekan Rotate lalu Scan lagi.")
-
-        Text("Tanggal pakai format yyyy-MM-dd. Total isi angka (contoh 12345.67).")
+        Text(
+            "Tips: kalau struk miring/kurang fokus, balik ke Scan → Crop/Rotate/Re-OCR.",
+            style = MaterialTheme.typography.bodySmall
+        )
 
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
@@ -72,10 +74,13 @@ fun ReceiptReviewScreen(
             modifier = Modifier.fillMaxWidth(),
             value = dateIso,
             onValueChange = { dateIso = it.trim() },
-            label = { Text("Date (yyyy-MM-dd)") },
+            label = { Text("Tanggal (yyyy-MM-dd)") },
             isError = !dateOk,
             supportingText = {
-                if (!dateOk) Text("Format tanggal salah. Contoh: 2026-02-05")
+                when {
+                    !dateOk -> Text("Format salah. Contoh: 2026-02-05")
+                    dateIso.isNotBlank() -> Text("Display: ${DateFmt.formatIso(dateIso)}")
+                }
             },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
@@ -89,9 +94,9 @@ fun ReceiptReviewScreen(
             isError = total.isNotBlank() && !totalOk,
             supportingText = {
                 if (total.isNotBlank() && !totalOk) {
-                    Text("Total harus angka. Contoh: 12345.67")
+                    Text("Total harus angka. Contoh: 12000 / 12.000 / 12.000,50")
                 } else if (totalOk) {
-                    Text("Normalized: ${Money.normalize(total)} • ${Money.formatIdr(Money.normalize(total))}")
+                    Text("Display: ${Money.formatIdr(totalNorm)}")
                 }
             },
             singleLine = true,
@@ -109,7 +114,7 @@ fun ReceiptReviewScreen(
                         ReceiptDraft(
                             merchant = merchant.trim(),
                             dateIso = dateIso.trim(),
-                            total = Money.normalize(total)
+                            total = totalNorm
                         )
                     )
                 }

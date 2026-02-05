@@ -20,6 +20,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import id.teratai.dompet.data.TransactionEntity
 import id.teratai.dompet.util.Money
 import id.teratai.dompet.util.TimeFmt
+import id.teratai.dompet.util.DateFmt
 
 @Composable
 fun HistoryScreen(
@@ -58,7 +59,7 @@ private fun TransactionRow(tx: TransactionEntity, onClick: () -> Unit) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(tx.merchant.ifBlank { "Unknown" }, style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(tx.dateIso.ifBlank { "(no date)" }, style = MaterialTheme.typography.bodySmall)
+                Text(DateFmt.formatIso(tx.dateIso), style = MaterialTheme.typography.bodySmall)
                 Text("Total: ${Money.formatIdr(tx.total)}", style = MaterialTheme.typography.bodySmall)
             }
             Text("Saved: ${TimeFmt.formatCreatedAt(tx.createdAtMs)}", style = MaterialTheme.typography.bodySmall)
