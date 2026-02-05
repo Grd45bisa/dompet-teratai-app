@@ -14,6 +14,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePicker
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +31,11 @@ import coil.compose.AsyncImage
 import id.teratai.dompet.util.DateFmt
 import id.teratai.dompet.util.Money
 
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReceiptReviewScreen(
     initial: ReceiptDraft,
@@ -36,6 +46,20 @@ fun ReceiptReviewScreen(
     var merchant by remember { mutableStateOf(initial.merchant) }
     var dateIso by remember { mutableStateOf(initial.dateIso) }
     var total by remember { mutableStateOf(initial.total) }
+
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    val initialDateMillis = remember(dateIso) {
+        try {
+            if (dateIso.isBlank()) null else {
+                val d = LocalDate.parse(dateIso)
+                d.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            }
+        } catch (_: Throwable) {
+            null
+        }
+    }
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDateMillis)
 
     val dateOk = dateIso.isBlank() || Regex("\\d{4}-\\d{2}-\\d{2}").matches(dateIso)
     val totalNorm = Money.normalize(total)
@@ -48,6 +72,28 @@ fun ReceiptReviewScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("Review transaksi", style = MaterialTheme.typography.titleLarge)
+
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        val ms = datePickerState.selectedDateMillis
+                        if (ms != null) {
+                            val d = Instant.ofEpochMilli(ms).atZone(ZoneId.systemDefault()).toLocalDate()
+                            dateIso = d.toString()
+                        }
+                        showDatePicker = false
+                    }) { Text("OK") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) { Text("Batal") }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
+
 
         if (imageUri != null) {
             AsyncImage(
@@ -85,6 +131,11 @@ fun ReceiptReviewScreen(
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
+
+        TextButton(onClick = { showDatePicker = true }) {
+            Text("Pilih tanggal")
+        }
+
 
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
