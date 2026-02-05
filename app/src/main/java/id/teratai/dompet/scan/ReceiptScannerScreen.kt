@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,7 +48,7 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
     var previewView: PreviewView? by remember { mutableStateOf(null) }
     val uiState by vm.uiState.collectAsStateWithLifecycleCompat()
 
-    var showReview by remember { mutableStateOf(false) }
+    var showReview by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(previewView) {
         val pv = previewView ?: return@LaunchedEffect
