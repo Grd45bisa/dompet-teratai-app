@@ -1,10 +1,12 @@
 package id.teratai.dompet.history
 
 import android.app.Application
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -18,17 +20,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import coil.compose.AsyncImage
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewModelScope
+import coil.compose.AsyncImage
 import id.teratai.dompet.data.DatabaseProvider
 import id.teratai.dompet.data.TransactionEntity
+import id.teratai.dompet.util.DateFmt
 import id.teratai.dompet.util.Money
 import id.teratai.dompet.util.TimeFmt
-import id.teratai.dompet.util.DateFmt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -63,13 +65,13 @@ fun TransactionDetailScreen(
 ) {
     var loaded by remember { mutableStateOf(false) }
     var showConfirmDelete by remember { mutableStateOf(false) }
+
     if (!loaded) {
         loaded = true
         vm.load(id)
     }
 
     val tx by vm.tx.collectAsStateWithLifecycleCompat()
-
 
     if (showConfirmDelete) {
         AlertDialog(
@@ -95,37 +97,45 @@ fun TransactionDetailScreen(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Detail", style = MaterialTheme.typography.titleLarge)
+        Text("Detail transaksi", style = MaterialTheme.typography.titleLarge)
 
         if (tx == null) {
             Text("Data tidak ditemukan.")
-            OutlinedButton(onClick = onBack) { Text("Back") }
+            OutlinedButton(onClick = onBack) { Text("Kembali") }
         } else {
             val t = tx!!
-            Text("Merchant: ${t.merchant}")
-            Text("Date: ${DateFmt.formatIso(t.dateIso)}")
-            Text("Total: ${Money.formatIdr(t.total)}")
-            Text("Saved: ${TimeFmt.formatCreatedAt(t.createdAtMs)}")
+
+            Text("Merchant", style = MaterialTheme.typography.labelMedium)
+            Text(t.merchant)
+
+            Text("Tanggal", style = MaterialTheme.typography.labelMedium)
+            Text(DateFmt.formatIso(t.dateIso))
+
+            Text("Total", style = MaterialTheme.typography.labelMedium)
+            Text(Money.formatIdr(t.total))
+
+            Text("Disimpan", style = MaterialTheme.typography.labelMedium)
+            Text(TimeFmt.formatCreatedAt(t.createdAtMs))
 
             if (!t.imageUri.isNullOrBlank()) {
-                AsyncImage(
-                    model = t.imageUri,
-                    contentDescription = "Receipt image",
-                    modifier = Modifier
-                        .padding(top = 8.dp)
-                )
+                val uri = try { Uri.parse(t.imageUri) } catch (_: Throwable) { null }
+                if (uri != null) {
+                    AsyncImage(
+                        model = uri,
+                        contentDescription = "Receipt image",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                    )
+                }
             }
 
-            Text("OCR Raw", style = MaterialTheme.typography.titleMedium)
+            Text("Teks OCR (raw)", style = MaterialTheme.typography.titleMedium)
             Text(t.rawOcrText, style = MaterialTheme.typography.bodySmall)
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = onBack) { Text("Back") }
-                Button(
-                    onClick = {
-                        showConfirmDelete = true
-                    }
-                ) { Text("Hapus") }
+                OutlinedButton(onClick = onBack) { Text("Kembali") }
+                Button(onClick = { showConfirmDelete = true }) { Text("Hapus") }
             }
         }
     }

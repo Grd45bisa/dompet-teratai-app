@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
                                 NavigationBarItem(
                                     selected = route == Route.History,
                                     onClick = { route = Route.History },
-                                    label = { Text("History") },
+                                    label = { Text("Riwayat") },
                                     icon = { androidx.compose.material3.Icon(Icons.Default.History, contentDescription = null) }
                                 )
                             }
