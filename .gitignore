@@ -1,0 +1,22 @@
+# Gradle
+.gradle/
+build/
+
+# Android Studio
+.idea/
+*.iml
+local.properties
+
+# Mac/Windows
+.DS_Store
+Thumbs.db
+
+# Kotlin
+out/
+
+# Keystore
+*.jks
+*.keystore
+
+# Logs
+*.log
