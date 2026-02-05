@@ -16,6 +16,7 @@ import id.teratai.dompet.data.TransactionRepository
 import id.teratai.dompet.parse.ReceiptHeuristicParser
 import id.teratai.dompet.util.Money
 import id.teratai.dompet.util.ImageRotate
+import id.teratai.dompet.util.ImagePreprocess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -51,31 +52,7 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                     val uri = Uri.fromFile(outFile)
-                    _uiState.value = ReceiptScanUiState.OcrRunning
-
-                    val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-                    val image = InputImage.fromFilePath(context, uri)
-                    recognizer.process(image)
-                        .addOnSuccessListener { result ->
-                            viewModelScope.launch(Dispatchers.Default) {
-                                val parsed = ReceiptHeuristicParser.parse(result.text)
-                                val draft = ReceiptDraft(
-                                    merchant = parsed.merchant.orEmpty(),
-                                    dateIso = parsed.date.orEmpty(),
-                                    total = parsed.total.orEmpty()
-                                )
-                                _uiState.value = ReceiptScanUiState.Done(
-                                    imageUri = uri,
-                                    ocrText = result.text,
-                                    draft = draft,
-                                    parsedSummary = parsed.pretty()
-                                )
-                            }
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("ReceiptScanner", "OCR failed", e)
-                            _uiState.value = ReceiptScanUiState.Error("OCR error: ${e.message}")
-                        }
+                    rerunOcr(uri)
                 }
 
                 override fun onError(exception: ImageCaptureException) {
@@ -90,8 +67,12 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
     private fun rerunOcr(uri: Uri) {
         val context = getApplication<Application>()
         _uiState.value = ReceiptScanUiState.OcrRunning
+
+        val preprocessed = ImagePreprocess.resizeForOcr(context, uri)
+        val effectiveUri = preprocessed ?: uri
+
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-        val image = InputImage.fromFilePath(context, uri)
+        val image = InputImage.fromFilePath(context, effectiveUri)
         recognizer.process(image)
             .addOnSuccessListener { result ->
                 viewModelScope.launch(Dispatchers.Default) {
@@ -102,7 +83,7 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
                         total = parsed.total.orEmpty()
                     )
                     _uiState.value = ReceiptScanUiState.Done(
-                        imageUri = uri,
+                        imageUri = effectiveUri,
                         ocrText = result.text,
                         draft = draft,
                         parsedSummary = parsed.pretty()
