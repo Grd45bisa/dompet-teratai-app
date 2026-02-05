@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
@@ -21,7 +23,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import id.teratai.dompet.history.HistoryScreen
+import id.teratai.dompet.history.TransactionDetailScreen
 import id.teratai.dompet.scan.ReceiptScannerScreen
+
+private enum class Route { Scan, History, Detail }
 
 class MainActivity : ComponentActivity() {
 
@@ -37,8 +43,30 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                Scaffold { padding ->
-                    if (!hasCameraPermission) {
+                var route by remember { mutableStateOf(Route.Scan) }
+                var selectedId by remember { mutableStateOf<Long?>(null) }
+
+                Scaffold(
+                    bottomBar = {
+                        if (route != Route.Detail) {
+                            NavigationBar {
+                                NavigationBarItem(
+                                    selected = route == Route.Scan,
+                                    onClick = { route = Route.Scan },
+                                    label = { Text("Scan") },
+                                    icon = { }
+                                )
+                                NavigationBarItem(
+                                    selected = route == Route.History,
+                                    onClick = { route = Route.History },
+                                    label = { Text("History") },
+                                    icon = { }
+                                )
+                            }
+                        }
+                    }
+                ) { padding ->
+                    if (route == Route.Scan && !hasCameraPermission) {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -62,7 +90,17 @@ class MainActivity : ComponentActivity() {
                                 .fillMaxSize()
                                 .padding(padding)
                         ) {
-                            ReceiptScannerScreen()
+                            when (route) {
+                                Route.Scan -> ReceiptScannerScreen()
+                                Route.History -> HistoryScreen(onOpen = { id ->
+                                    selectedId = id
+                                    route = Route.Detail
+                                })
+                                Route.Detail -> TransactionDetailScreen(
+                                    id = selectedId ?: 0,
+                                    onBack = { route = Route.History }
+                                )
+                            }
                         }
                     }
                 }
