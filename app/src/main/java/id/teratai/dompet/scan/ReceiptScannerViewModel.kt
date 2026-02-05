@@ -18,6 +18,7 @@ import id.teratai.dompet.util.Money
 import id.teratai.dompet.util.ImageRotate
 import id.teratai.dompet.util.ImagePreprocess
 import id.teratai.dompet.util.Uris
+import id.teratai.dompet.util.ReceiptRetention
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -139,6 +140,7 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
                     createdAtMs = System.currentTimeMillis()
                 )
             )
+            ReceiptRetention.cleanup(getApplication())
             // after save, reset scan
             _uiState.value = ReceiptScanUiState.Idle
         }
