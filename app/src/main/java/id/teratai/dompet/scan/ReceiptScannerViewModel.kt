@@ -49,9 +49,15 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
                         .addOnSuccessListener { result ->
                             viewModelScope.launch(Dispatchers.Default) {
                                 val parsed = ReceiptHeuristicParser.parse(result.text)
+                                val draft = ReceiptDraft(
+                                    merchant = parsed.merchant.orEmpty(),
+                                    dateIso = parsed.date.orEmpty(),
+                                    total = parsed.total.orEmpty()
+                                )
                                 _uiState.value = ReceiptScanUiState.Done(
                                     imageUri = uri,
                                     ocrText = result.text,
+                                    draft = draft,
                                     parsedSummary = parsed.pretty()
                                 )
                             }

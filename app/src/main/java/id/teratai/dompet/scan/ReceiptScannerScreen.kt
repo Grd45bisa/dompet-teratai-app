@@ -40,10 +40,14 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
     val lifecycleOwner = LocalLifecycleOwner.current
 
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
-    val imageCapture = remember { ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY).build() }
+    val imageCapture = remember {
+        ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY).build()
+    }
 
     var previewView: PreviewView? by remember { mutableStateOf(null) }
     val uiState by vm.uiState.collectAsStateWithLifecycleCompat()
+
+    var showReview by remember { mutableStateOf(false) }
 
     LaunchedEffect(previewView) {
         val pv = previewView ?: return@LaunchedEffect
@@ -60,6 +64,21 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
             preview,
             imageCapture
         )
+    }
+
+    if (showReview && uiState is ReceiptScanUiState.Done) {
+        val done = uiState as ReceiptScanUiState.Done
+        ReceiptReviewScreen(
+            initial = done.draft,
+            onBack = { showReview = false },
+            onSave = {
+                // Phase 1.3 will persist to Room.
+                // For now, we just go back to scan.
+                showReview = false
+                vm.reset()
+            }
+        )
+        return
     }
 
     Column(
@@ -126,6 +145,13 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
                 enabled = uiState is ReceiptScanUiState.Done || uiState is ReceiptScanUiState.Error
             ) {
                 Text("Ulangi")
+            }
+
+            Button(
+                onClick = { showReview = true },
+                enabled = uiState is ReceiptScanUiState.Done
+            ) {
+                Text("Lanjut")
             }
         }
 
