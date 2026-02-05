@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -60,12 +61,31 @@ fun TransactionDetailScreen(
     vm: TransactionDetailViewModel = viewModel(),
 ) {
     var loaded by remember { mutableStateOf(false) }
+    var showConfirmDelete by remember { mutableStateOf(false) }
     if (!loaded) {
         loaded = true
         vm.load(id)
     }
 
     val tx by vm.tx.collectAsStateWithLifecycleCompat()
+
+
+    if (showConfirmDelete) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDelete = false },
+            title = { Text("Hapus transaksi?") },
+            text = { Text("Aksi ini tidak bisa dibatalkan.") },
+            confirmButton = {
+                Button(onClick = {
+                    showConfirmDelete = false
+                    vm.delete(id) { onBack() }
+                }) { Text("Hapus") }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showConfirmDelete = false }) { Text("Batal") }
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -102,7 +122,7 @@ fun TransactionDetailScreen(
                 OutlinedButton(onClick = onBack) { Text("Back") }
                 Button(
                     onClick = {
-                        vm.delete(id) { onBack() }
+                        showConfirmDelete = true
                     }
                 ) { Text("Hapus") }
             }

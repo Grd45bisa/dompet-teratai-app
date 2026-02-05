@@ -83,14 +83,19 @@ object ReceiptHeuristicParser {
     private fun guessTotal(lines: List<String>): String? {
         // Find line containing TOTAL keyword; else take largest currency-like number.
         val moneyRx = Regex("(\\d{1,3}([.,]\\d{3})+|\\d+)([.,]\\d{2})?")
-        val totalLine = lines.firstOrNull { it.uppercase(Locale.ROOT).contains("TOTAL") }
+        val upLines = lines.map { it.uppercase(Locale.ROOT) }
+        val totalKeywords = listOf("GRAND TOTAL", "TOTAL BAYAR", "TOTAL", "AMOUNT", "TOTAL DUE")
+        val totalLine = lines.zip(upLines).firstOrNull { (orig, up) -> totalKeywords.any { up.contains(it) } }?.first
         if (totalLine != null) {
             val m = moneyRx.findAll(totalLine).map { it.value }.toList()
             if (m.isNotEmpty()) return normalizeMoney(m.last())
         }
 
         // fallback: pick max numeric value from all lines
-        val all = lines.flatMap { ln -> moneyRx.findAll(ln).map { it.value }.toList() }
+        val all = lines.zip(upLines).flatMap { (ln, up) ->
+            if (up.contains("SUBTOTAL") || up.contains("PPN") || up.contains("PAJAK") || up.contains("TAX")) emptyList()
+            else moneyRx.findAll(ln).map { it.value }.toList()
+        }
         if (all.isEmpty()) return null
         val best = all.maxByOrNull { toComparableMoney(it) } ?: return null
         return normalizeMoney(best)

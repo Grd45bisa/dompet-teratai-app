@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -61,13 +64,13 @@ class MainActivity : ComponentActivity() {
                                     selected = route == Route.Scan,
                                     onClick = { route = Route.Scan },
                                     label = { Text("Scan") },
-                                    icon = { }
+                                    icon = { androidx.compose.material3.Icon(Icons.Default.PhotoCamera, contentDescription = null) }
                                 )
                                 NavigationBarItem(
                                     selected = route == Route.History,
                                     onClick = { route = Route.History },
                                     label = { Text("History") },
-                                    icon = { }
+                                    icon = { androidx.compose.material3.Icon(Icons.Default.History, contentDescription = null) }
                                 )
                             }
                         }
