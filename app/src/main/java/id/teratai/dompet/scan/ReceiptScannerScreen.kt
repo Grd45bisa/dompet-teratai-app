@@ -33,7 +33,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.canhub.cropper.CropImageContract
+import com.canhub.cropper.CropImageContractOptions
+import com.canhub.cropper.CropImageOptions
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.activity.compose.rememberLauncherForActivityResult
 
 @Composable
 fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
@@ -47,6 +51,13 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
 
     var previewView: PreviewView? by remember { mutableStateOf(null) }
     val uiState by vm.uiState.collectAsStateWithLifecycleCompat()
+
+    val cropLauncher = rememberLauncherForActivityResult(CropImageContract()) { result ->
+        if (result.isSuccessful) {
+            val uri = result.uriContent
+            if (uri != null) vm.rerunOcrForUri(uri)
+        }
+    }
 
     var showReview by rememberSaveable { mutableStateOf(false) }
 
@@ -145,6 +156,26 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
                 enabled = uiState is ReceiptScanUiState.Done || uiState is ReceiptScanUiState.Error
             ) {
                 Text("Ulangi")
+            }
+
+            OutlinedButton(
+                onClick = {
+                    val done = uiState as? ReceiptScanUiState.Done
+                    val uri = done?.imageUri
+                    if (uri != null) {
+                        cropLauncher.launch(
+                            CropImageContractOptions(
+                                uri,
+                                CropImageOptions(
+                                    guidelines = com.canhub.cropper.CropImageView.Guidelines.ON
+                                )
+                            )
+                        )
+                    }
+                },
+                enabled = uiState is ReceiptScanUiState.Done
+            ) {
+                Text("Crop")
             }
 
             OutlinedButton(

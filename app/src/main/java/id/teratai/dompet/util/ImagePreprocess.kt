@@ -32,7 +32,7 @@ object ImagePreprocess {
             FileOutputStream(outFile).use { fos ->
                 outBmp.compress(Bitmap.CompressFormat.JPEG, jpegQuality, fos)
             }
-            android.net.Uri.fromFile(outFile)
+            id.teratai.dompet.util.Uris.forFile(context, outFile)
         } catch (_: Throwable) {
             null
         }

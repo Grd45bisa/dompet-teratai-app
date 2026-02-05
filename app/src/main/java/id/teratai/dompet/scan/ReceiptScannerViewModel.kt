@@ -17,6 +17,7 @@ import id.teratai.dompet.parse.ReceiptHeuristicParser
 import id.teratai.dompet.util.Money
 import id.teratai.dompet.util.ImageRotate
 import id.teratai.dompet.util.ImagePreprocess
+import id.teratai.dompet.util.Uris
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -51,7 +52,7 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
             androidx.core.content.ContextCompat.getMainExecutor(context),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    val uri = Uri.fromFile(outFile)
+                    val uri = Uris.forFile(context, outFile)
                     rerunOcr(uri)
                 }
 
@@ -94,6 +95,10 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
                 Log.e("ReceiptScanner", "OCR failed", e)
                 _uiState.value = ReceiptScanUiState.Error("OCR error: ${e.message}")
             }
+    }
+
+    fun rerunOcrForUri(uri: Uri) {
+        rerunOcr(uri)
     }
 
     fun rotate90AndRerunOcr() {
