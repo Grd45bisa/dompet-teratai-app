@@ -1,6 +1,7 @@
 package id.teratai.dompet.history
 
 import android.app.Application
+import androidx.compose.animation.AnimatedVisibility
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -65,6 +66,7 @@ fun TransactionDetailScreen(
 ) {
     var loaded by remember { mutableStateOf(false) }
     var showConfirmDelete by remember { mutableStateOf(false) }
+    var showOcr by remember { mutableStateOf(false) }
 
     if (!loaded) {
         loaded = true
@@ -130,8 +132,13 @@ fun TransactionDetailScreen(
                 }
             }
 
-            Text("Teks OCR (raw)", style = MaterialTheme.typography.titleMedium)
-            Text(t.rawOcrText, style = MaterialTheme.typography.bodySmall)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Teks OCR (raw)", style = MaterialTheme.typography.titleMedium)
+                OutlinedButton(onClick = { showOcr = !showOcr }) { Text(if (showOcr) "Sembunyikan" else "Tampilkan") }
+            }
+            AnimatedVisibility(visible = showOcr) {
+                Text(t.rawOcrText, style = MaterialTheme.typography.bodySmall)
+            }
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = onBack) { Text("Kembali") }

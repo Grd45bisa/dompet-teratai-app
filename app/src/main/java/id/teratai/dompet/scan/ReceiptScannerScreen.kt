@@ -2,6 +2,7 @@ package id.teratai.dompet.scan
 
 import android.view.ViewGroup
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.animation.AnimatedVisibility
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
@@ -63,6 +64,7 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
     }
 
     var showReview by rememberSaveable { mutableStateOf(false) }
+    var showOcr by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(previewView) {
         val pv = previewView ?: return@LaunchedEffect
@@ -234,8 +236,15 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
                     Text("Hasil parsing (baseline)", style = MaterialTheme.typography.titleMedium)
                     Text(s.parsedSummary, style = MaterialTheme.typography.bodySmall)
 
-                    Text("Teks OCR", style = MaterialTheme.typography.titleMedium)
-                    Text(s.ocrText, style = MaterialTheme.typography.bodySmall)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text("Teks OCR", style = MaterialTheme.typography.titleMedium)
+                        OutlinedButton(onClick = { showOcr = !showOcr }) {
+                            Text(if (showOcr) "Sembunyikan" else "Tampilkan")
+                        }
+                    }
+                    AnimatedVisibility(visible = showOcr) {
+                        Text(s.ocrText, style = MaterialTheme.typography.bodySmall)
+                    }
                 }
             }
 
