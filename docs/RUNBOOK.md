@@ -16,3 +16,8 @@
 - Improve UI/UX (show captured image, better layout)
 - Add edit + save transaction locally (Room)
 - Add on-device TFLite student model (later)
+
+## UI quality improvements added
+- Receipt image persisted in internal storage and displayed in review/detail
+- Total normalized + displayed as IDR currency format
+- Human-readable timestamp for saved transactions
