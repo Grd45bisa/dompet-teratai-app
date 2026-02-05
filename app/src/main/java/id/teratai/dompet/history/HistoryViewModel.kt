@@ -20,3 +20,6 @@ class HistoryViewModel(app: Application) : AndroidViewModel(app) {
     val items: StateFlow<List<TransactionEntity>> = repo.observeAll()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 }
+
+
+    suspend fun getAllOnce(): List<TransactionEntity> = items.value
