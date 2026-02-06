@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HistoryViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -27,7 +28,7 @@ class HistoryViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch(Dispatchers.IO) {
             dao.deleteAll()
             StorageCleanup.clearAllUserData(getApplication())
-            onDone()
+            withContext(Dispatchers.Main) { onDone() }
         }
     }
 }

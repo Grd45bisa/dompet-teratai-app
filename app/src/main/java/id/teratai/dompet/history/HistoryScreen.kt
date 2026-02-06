@@ -17,7 +17,12 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +51,9 @@ fun HistoryScreen(
 
     var query by remember { mutableStateOf("") }
     var showConfirmClear by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     val filtered = remember(items, query) {
         val q = query.trim().lowercase()
         if (q.isBlank()) items
@@ -54,12 +62,16 @@ fun HistoryScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
         Text("Riwayat", style = MaterialTheme.typography.titleLarge)
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -115,7 +127,7 @@ fun HistoryScreen(
                 confirmButton = {
                     Button(onClick = {
                         showConfirmClear = false
-                        vm.clearAll { }
+                        vm.clearAll { scope.launch { snackbarHostState.showSnackbar("Data terhapus") } }
                     }) { Text("Hapus semua") }
                 },
                 dismissButton = {
@@ -133,6 +145,7 @@ fun HistoryScreen(
                     TransactionRow(tx = tx, onClick = { onOpen(tx.id) })
                 }
             }
+        }
         }
     }
 }
