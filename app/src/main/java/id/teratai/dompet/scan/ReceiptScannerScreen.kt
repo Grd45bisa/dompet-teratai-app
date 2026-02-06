@@ -2,6 +2,7 @@ package id.teratai.dompet.scan
 
 import android.view.ViewGroup
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -41,6 +42,9 @@ import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.canhub.cropper.CropImageView
+import id.teratai.dompet.ml.ModelInstaller
+import id.teratai.dompet.ml.ModelStore
+import id.teratai.dompet.ml.TotalLineModel
 
 @Composable
 fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
@@ -54,6 +58,17 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
 
     var previewView: PreviewView? by remember { mutableStateOf(null) }
     val uiState by vm.uiState.collectAsStateWithLifecycleCompat()
+
+    val modelPickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            val ok = ModelInstaller.installTotalLineModel(context, uri)
+            if (ok) {
+                TotalLineModel.invalidate()
+                // rerun OCR to reflect new model if there is a current image
+                vm.reOcr()
+            }
+        }
+    }
 
     val cropLauncher = rememberLauncherForActivityResult(CropImageContract()) { result ->
         if (result.isSuccessful) {
@@ -169,6 +184,12 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
             ) {
                 Text("Ulangi")
             }
+        }
+
+        Text("Model TOTAL-line: " + if (ModelStore.hasTotalLineModel(context)) "Terpasang" else "Belum ada", style = MaterialTheme.typography.bodySmall)
+
+        OutlinedButton(onClick = { modelPickerLauncher.launch(arrayOf("application/octet-stream", "application/x-tflite", "*/*")) }) {
+            Text("Pasang Model (.tflite)")
         }
 
         // Actions row 2

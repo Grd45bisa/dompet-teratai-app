@@ -3,6 +3,7 @@ package id.teratai.dompet.ml
 import android.content.Context
 import android.util.Log
 import org.tensorflow.lite.Interpreter
+import java.io.File
 import java.io.FileInputStream
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
@@ -27,6 +28,10 @@ class TotalLineModel private constructor(private val interpreter: Interpreter) {
 
         @Volatile private var instance: TotalLineModel? = null
 
+        fun invalidate() {
+            instance = null
+        }
+
         fun getOrNull(context: Context): TotalLineModel? {
             return instance ?: synchronized(this) {
                 instance ?: load(context)?.also { instance = it }
@@ -35,15 +40,30 @@ class TotalLineModel private constructor(private val interpreter: Interpreter) {
 
         private fun load(context: Context): TotalLineModel? {
             return try {
-                val buf = loadAsset(context, ASSET_NAME)
+                val buf = loadModelBuffer(context)
                 val opts = Interpreter.Options()
                 // Model may require Select TF Ops (Flex)
                 opts.setUseXNNPACK(true)
                 val interpreter = Interpreter(buf, opts)
                 TotalLineModel(interpreter)
             } catch (t: Throwable) {
-                Log.w(TAG, "Model not available yet (asset missing or incompatible): ${t.message}")
+                Log.w(TAG, "Model not available yet: ${t.message}")
                 null
+            }
+        }
+
+        private fun loadModelBuffer(context: Context): MappedByteBuffer {
+            val internal = ModelStore.totalLineFile(context)
+            return if (internal.exists()) {
+                loadFile(internal)
+            } else {
+                loadAsset(context, ASSET_NAME)
+            }
+        }
+
+        private fun loadFile(file: File): MappedByteBuffer {
+            FileInputStream(file).channel.use { ch: FileChannel ->
+                return ch.map(FileChannel.MapMode.READ_ONLY, 0, file.length())
             }
         }
 
