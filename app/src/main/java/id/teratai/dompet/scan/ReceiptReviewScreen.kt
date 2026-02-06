@@ -4,6 +4,9 @@ import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material3.Checkbox
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -25,11 +28,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import id.teratai.dompet.util.DateFmt
 import id.teratai.dompet.util.Money
+import id.teratai.dompet.dataset.DatasetLogger
 
 import java.time.Instant
 import java.time.LocalDate
@@ -39,13 +44,18 @@ import java.time.ZoneId
 @Composable
 fun ReceiptReviewScreen(
     initial: ReceiptDraft,
+    ocrText: String,
     imageUri: Uri?,
     onBack: () -> Unit,
     onSave: (ReceiptDraft) -> Unit,
 ) {
+    val context = LocalContext.current
+
     var merchant by remember { mutableStateOf(initial.merchant) }
     var dateIso by remember { mutableStateOf(initial.dateIso) }
     var total by remember { mutableStateOf(initial.total) }
+
+    var saveAsTraining by remember { mutableStateOf(true) }
 
     var showDatePicker by remember { mutableStateOf(false) }
 
@@ -154,6 +164,11 @@ fun ReceiptReviewScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
 
+        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Checkbox(checked = saveAsTraining, onCheckedChange = { saveAsTraining = it })
+            Text("Simpan sebagai data latih (lokal)")
+        }
+
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(onClick = onBack) {
                 Text("Back")
@@ -161,13 +176,19 @@ fun ReceiptReviewScreen(
             Button(
                 enabled = totalOk && dateOk,
                 onClick = {
-                    onSave(
-                        ReceiptDraft(
+                    val out = ReceiptDraft(
                             merchant = merchant.trim(),
                             dateIso = dateIso.trim(),
                             total = totalNorm
                         )
-                    )
+                    if (saveAsTraining) {
+                        DatasetLogger.appendSample(
+                            context = context,
+                            ocrText = ocrText,
+                            draft = out
+                        )
+                    }
+                    onSave(out)
                 }
             ) {
                 Text("Simpan")

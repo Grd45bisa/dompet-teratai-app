@@ -87,6 +87,7 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
         val done = uiState as ReceiptScanUiState.Done
         ReceiptReviewScreen(
             initial = done.draft,
+            ocrText = done.ocrText,
             imageUri = done.imageUri,
             onBack = { showReview = false },
             onSave = { saved ->
