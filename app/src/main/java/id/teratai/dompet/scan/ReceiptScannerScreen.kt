@@ -80,6 +80,7 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
 
     var showReview by rememberSaveable { mutableStateOf(false) }
     var showOcr by rememberSaveable { mutableStateOf(false) }
+    var showDebug by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(previewView) {
         val pv = previewView ?: return@LaunchedEffect
@@ -258,11 +259,11 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
                     Text("Hasil parsing (baseline)", style = MaterialTheme.typography.titleMedium)
                     Text(s.parsedSummary, style = MaterialTheme.typography.bodySmall)
 
-                    if (s.totalModelScore != null) {
+                    if (showDebug && s.totalModelScore != null) {
                         Text("Skor model TOTAL: ${String.format("%.3f", s.totalModelScore)}", style = MaterialTheme.typography.bodySmall)
                     }
 
-                    if (s.totalFromHeuristic != null || s.totalFromModel != null) {
+                    if (showDebug && (s.totalFromHeuristic != null || s.totalFromModel != null)) {
                         Text("Heuristic total: ${s.totalFromHeuristic ?: "-"}", style = MaterialTheme.typography.bodySmall)
                         Text("Model total: ${s.totalFromModel ?: "-"}", style = MaterialTheme.typography.bodySmall)
                         Text("Model dipakai: ${if (s.modelUsedForTotal) "YA" else "TIDAK"}", style = MaterialTheme.typography.bodySmall)
