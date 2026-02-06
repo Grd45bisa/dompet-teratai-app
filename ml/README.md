@@ -22,3 +22,22 @@ Each line is JSON with:
 
 ## Notes
 We intentionally start with **total/date/merchant** (no item list yet) to keep model/data requirements minimal.
+
+## Baseline: total line classifier (scikit-learn)
+
+1) Put `receipt_labels.jsonl` into `ml/`
+2) Install deps:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+3) Train:
+
+```bash
+python train_total_line.py
+```
+
+This produces `model_total_line.joblib`.
