@@ -41,3 +41,15 @@ python train_total_line.py
 ```
 
 This produces `model_total_line.joblib`.
+
+## TF/Keras -> TFLite (on-device)
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-tf.txt
+python train_total_line_tf.py
+```
+
+Outputs:
+- `total_line_model.tflite`
