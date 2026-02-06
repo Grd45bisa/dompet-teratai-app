@@ -13,6 +13,9 @@ sealed class ReceiptScanUiState {
         val draft: ReceiptDraft,
         val parsedSummary: String,
         val totalModelScore: Float?,
+        val totalFromModel: String?,
+        val totalFromHeuristic: String?,
+        val modelUsedForTotal: Boolean,
     ) : ReceiptScanUiState()
 
     data class Error(val message: String) : ReceiptScanUiState()

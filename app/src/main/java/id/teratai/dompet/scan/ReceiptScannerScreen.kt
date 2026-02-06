@@ -262,6 +262,13 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
                         Text("Skor model TOTAL: ${String.format("%.3f", s.totalModelScore)}", style = MaterialTheme.typography.bodySmall)
                     }
 
+                    if (s.totalFromHeuristic != null || s.totalFromModel != null) {
+                        Text("Heuristic total: ${s.totalFromHeuristic ?: "-"}", style = MaterialTheme.typography.bodySmall)
+                        Text("Model total: ${s.totalFromModel ?: "-"}", style = MaterialTheme.typography.bodySmall)
+                        Text("Model dipakai: ${if (s.modelUsedForTotal) "YA" else "TIDAK"}", style = MaterialTheme.typography.bodySmall)
+                    }
+
+
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text("Teks OCR", style = MaterialTheme.typography.titleMedium)
                         OutlinedButton(onClick = { showOcr = !showOcr }) {

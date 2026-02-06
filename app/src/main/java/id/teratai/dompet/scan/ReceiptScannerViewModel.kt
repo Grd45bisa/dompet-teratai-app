@@ -81,6 +81,7 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
             .addOnSuccessListener { result ->
                 viewModelScope.launch(Dispatchers.Default) {
                     val parsed = ReceiptHeuristicParser.parse(result.text)
+                    val heuristicTotal = parsed.total
                     var totalOverride: String? = null
                     var totalScore: Float? = null
                     val model = TotalLineModel.getOrNull(context)
@@ -90,17 +91,22 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
                         totalOverride = picked.totalNorm
                         totalScore = picked.bestScore
                     }
+                    val usedModelForTotal = totalOverride != null && (totalScore ?: 0f) >= 0.75f
+
                     val draft = ReceiptDraft(
                         merchant = parsed.merchant.orEmpty(),
                         dateIso = parsed.date.orEmpty(),
-                        total = (if (totalOverride != null && (totalScore ?: 0f) >= 0.75f) totalOverride else parsed.total).orEmpty()
+                        total = (if (usedModelForTotal) totalOverride else heuristicTotal).orEmpty()
                     )
                     _uiState.value = ReceiptScanUiState.Done(
                         imageUri = effectiveUri,
                         ocrText = result.text,
                         draft = draft,
                         parsedSummary = parsed.pretty(),
-                        totalModelScore = totalScore
+                        totalModelScore = totalScore,
+                        totalFromModel = totalOverride,
+                        totalFromHeuristic = heuristicTotal,
+                        modelUsedForTotal = usedModelForTotal
                     )
                 }
             }
