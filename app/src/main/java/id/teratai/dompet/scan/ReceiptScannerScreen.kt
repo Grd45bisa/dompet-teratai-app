@@ -258,6 +258,10 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
                     Text("Hasil parsing (baseline)", style = MaterialTheme.typography.titleMedium)
                     Text(s.parsedSummary, style = MaterialTheme.typography.bodySmall)
 
+                    if (s.totalModelScore != null) {
+                        Text("Skor model TOTAL: ${String.format("%.3f", s.totalModelScore)}", style = MaterialTheme.typography.bodySmall)
+                    }
+
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text("Teks OCR", style = MaterialTheme.typography.titleMedium)
                         OutlinedButton(onClick = { showOcr = !showOcr }) {

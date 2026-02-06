@@ -99,7 +99,8 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
                         imageUri = effectiveUri,
                         ocrText = result.text,
                         draft = draft,
-                        parsedSummary = parsed.pretty()
+                        parsedSummary = parsed.pretty(),
+                        totalModelScore = totalScore
                     )
                 }
             }

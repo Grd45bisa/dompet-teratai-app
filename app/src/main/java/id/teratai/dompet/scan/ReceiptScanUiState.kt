@@ -12,6 +12,7 @@ sealed class ReceiptScanUiState {
         val ocrText: String,
         val draft: ReceiptDraft,
         val parsedSummary: String,
+        val totalModelScore: Float?,
     ) : ReceiptScanUiState()
 
     data class Error(val message: String) : ReceiptScanUiState()
