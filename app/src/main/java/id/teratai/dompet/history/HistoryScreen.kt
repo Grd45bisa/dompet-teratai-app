@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -42,6 +45,7 @@ fun HistoryScreen(
     val items by vm.items.collectAsStateWithLifecycleCompat()
 
     var query by remember { mutableStateOf("") }
+    var showConfirmClear by remember { mutableStateOf(false) }
     val filtered = remember(items, query) {
         val q = query.trim().lowercase()
         if (q.isBlank()) items
@@ -88,6 +92,13 @@ fun HistoryScreen(
             }
         }
 
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = { showConfirmClear = true }) {
+                Text("Reset data")
+            }
+        }
+
+
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = query,
@@ -95,6 +106,24 @@ fun HistoryScreen(
             singleLine = true,
             label = { Text("Cari (merchant/tanggal/total)") }
         )
+
+        if (showConfirmClear) {
+            AlertDialog(
+                onDismissRequest = { showConfirmClear = false },
+                title = { Text("Reset semua data?") },
+                text = { Text("Ini akan menghapus SEMUA transaksi + foto struk yang tersimpan di device.") },
+                confirmButton = {
+                    Button(onClick = {
+                        showConfirmClear = false
+                        vm.clearAll { }
+                    }) { Text("Hapus semua") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showConfirmClear = false }) { Text("Batal") }
+                }
+            )
+        }
+
 
         if (filtered.isEmpty()) {
             Text("Tidak ada data yang cocok.")
