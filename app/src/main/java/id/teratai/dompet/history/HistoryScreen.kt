@@ -1,11 +1,5 @@
 package id.teratai.dompet.history
 
-import id.teratai.dompet.util.Files
-import id.teratai.dompet.export.ExportCsv
-import id.teratai.dompet.export.ExportJson
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.material3.OutlinedButton
-import androidx.core.content.FileProvider
 import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,14 +12,24 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import id.teratai.dompet.data.TransactionEntity
+import id.teratai.dompet.export.ExportCsv
+import id.teratai.dompet.export.ExportJson
 import id.teratai.dompet.util.DateFmt
+import id.teratai.dompet.util.Files
 import id.teratai.dompet.util.Money
 import id.teratai.dompet.util.TimeFmt
 
@@ -37,6 +41,15 @@ fun HistoryScreen(
     val context = LocalContext.current
     val items by vm.items.collectAsStateWithLifecycleCompat()
 
+    var query by remember { mutableStateOf("") }
+    val filtered = remember(items, query) {
+        val q = query.trim().lowercase()
+        if (q.isBlank()) items
+        else items.filter { tx ->
+            tx.merchant.lowercase().contains(q) || tx.dateIso.lowercase().contains(q) || tx.total.contains(q)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -45,39 +58,49 @@ fun HistoryScreen(
     ) {
         Text("Riwayat", style = MaterialTheme.typography.titleLarge)
 
-        OutlinedButton(onClick = {
-            val csv = ExportCsv.toCsv(items)
-            val file = Files.writeExport(context, "dompet-teratai-export.csv", csv)
-            val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
-            val intent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/csv"
-                putExtra(Intent.EXTRA_STREAM, uri)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = {
+                val csv = ExportCsv.toCsv(items)
+                val file = Files.writeExport(context, "dompet-teratai-export.csv", csv)
+                val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/csv"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(Intent.createChooser(intent, "Export CSV"))
+            }) {
+                Text("Export CSV")
             }
-            context.startActivity(Intent.createChooser(intent, "Export CSV"))
-        }) {
-            Text("Export CSV")
+
+            OutlinedButton(onClick = {
+                val json = ExportJson.toJson(items)
+                val file = Files.writeExport(context, "dompet-teratai-export.json", json)
+                val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "application/json"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(Intent.createChooser(intent, "Export JSON"))
+            }) {
+                Text("Export JSON")
+            }
         }
 
-        OutlinedButton(onClick = {
-            val json = ExportJson.toJson(items)
-            val file = Files.writeExport(context, "dompet-teratai-export.json", json)
-            val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
-            val intent = Intent(Intent.ACTION_SEND).apply {
-                type = "application/json"
-                putExtra(Intent.EXTRA_STREAM, uri)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            }
-            context.startActivity(Intent.createChooser(intent, "Export JSON"))
-        }) {
-            Text("Export JSON")
-        }
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = query,
+            onValueChange = { query = it },
+            singleLine = true,
+            label = { Text("Cari (merchant/tanggal/total)") }
+        )
 
-        if (items.isEmpty()) {
-            Text("Belum ada transaksi tersimpan.")
+        if (filtered.isEmpty()) {
+            Text("Tidak ada data yang cocok.")
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(items) { tx ->
+                items(filtered) { tx ->
                     TransactionRow(tx = tx, onClick = { onOpen(tx.id) })
                 }
             }
