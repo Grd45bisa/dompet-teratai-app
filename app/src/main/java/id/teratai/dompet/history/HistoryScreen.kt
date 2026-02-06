@@ -40,6 +40,7 @@ import id.teratai.dompet.util.DateFmt
 import id.teratai.dompet.util.Files
 import id.teratai.dompet.util.Money
 import id.teratai.dompet.util.TimeFmt
+import id.teratai.dompet.dataset.DatasetFiles
 
 @Composable
 fun HistoryScreen(
@@ -101,6 +102,21 @@ fun HistoryScreen(
                 context.startActivity(Intent.createChooser(intent, "Export JSON"))
             }) {
                 Text("Export JSON")
+            }
+
+            OutlinedButton(onClick = {
+                val file = DatasetFiles.datasetFile(context)
+                if (file.exists()) {
+                    val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    context.startActivity(Intent.createChooser(intent, "Export Dataset"))
+                }
+            }) {
+                Text("Export Dataset")
             }
         }
 

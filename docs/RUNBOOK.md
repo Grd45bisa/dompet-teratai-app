@@ -33,3 +33,4 @@
 ## Export
 - From Riwayat screen, tap **Export CSV** to share `dompet-teratai-export.csv`
 - From Riwayat screen, tap **Export JSON** to share `dompet-teratai-export.json`
+- From Riwayat screen, tap **Export Dataset** to share `receipt_labels.jsonl`
