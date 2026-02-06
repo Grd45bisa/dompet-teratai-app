@@ -101,6 +101,19 @@ object ReceiptHeuristicParser {
         return normalizeMoney(best)
     }
 
+
+
+    /**
+     * Extracts the most likely money amount from a single line.
+     * Used by ML total-line selector.
+     */
+    fun extractBestMoneyFromLine(line: String): String? {
+        val moneyRx = Regex("(\d{1,3}([.,]\d{3})+|\d+)([.,]\d{2})?")
+        val m = moneyRx.findAll(line).map { it.value }.toList()
+        if (m.isEmpty()) return null
+        return normalizeMoney(m.last())
+    }
+
     private fun normalizeMoney(s: String): String {
         // normalize: remove thousand separators, use dot as decimal, return as string
         val cleaned = s.trim()

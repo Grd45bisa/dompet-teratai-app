@@ -19,6 +19,8 @@ import id.teratai.dompet.util.ImageRotate
 import id.teratai.dompet.util.ImagePreprocess
 import id.teratai.dompet.util.Uris
 import id.teratai.dompet.util.ReceiptRetention
+import id.teratai.dompet.ml.TotalLineModel
+import id.teratai.dompet.ml.TotalLineSelector
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -79,10 +81,19 @@ class ReceiptScannerViewModel(app: Application) : AndroidViewModel(app) {
             .addOnSuccessListener { result ->
                 viewModelScope.launch(Dispatchers.Default) {
                     val parsed = ReceiptHeuristicParser.parse(result.text)
+                    var totalOverride: String? = null
+                    var totalScore: Float? = null
+                    val model = TotalLineModel.getOrNull(context)
+                    if (model != null) {
+                        val lines = result.text.lines().map { it.trim() }.filter { it.isNotBlank() }
+                        val picked = TotalLineSelector.pickTotalFromLines(model, lines)
+                        totalOverride = picked.totalNorm
+                        totalScore = picked.bestScore
+                    }
                     val draft = ReceiptDraft(
                         merchant = parsed.merchant.orEmpty(),
                         dateIso = parsed.date.orEmpty(),
-                        total = parsed.total.orEmpty()
+                        total = (if (totalOverride != null && (totalScore ?: 0f) >= 0.75f) totalOverride else parsed.total).orEmpty()
                     )
                     _uiState.value = ReceiptScanUiState.Done(
                         imageUri = effectiveUri,
