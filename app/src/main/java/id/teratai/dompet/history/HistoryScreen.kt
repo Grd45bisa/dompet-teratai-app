@@ -2,6 +2,7 @@ package id.teratai.dompet.history
 
 import id.teratai.dompet.util.Files
 import id.teratai.dompet.export.ExportCsv
+import id.teratai.dompet.export.ExportJson
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.OutlinedButton
 import androidx.core.content.FileProvider
@@ -56,6 +57,20 @@ fun HistoryScreen(
             context.startActivity(Intent.createChooser(intent, "Export CSV"))
         }) {
             Text("Export CSV")
+        }
+
+        OutlinedButton(onClick = {
+            val json = ExportJson.toJson(items)
+            val file = Files.writeExport(context, "dompet-teratai-export.json", json)
+            val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "application/json"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            context.startActivity(Intent.createChooser(intent, "Export JSON"))
+        }) {
+            Text("Export JSON")
         }
 
         if (items.isEmpty()) {
