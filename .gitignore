@@ -20,3 +20,7 @@ out/
 
 # Logs
 *.log
+
+# Gradle wrapper jars (we build via GitHub Actions setup-gradle)
+/gradle/wrapper/gradle-wrapper.jar
+/gradle/wrapper/gradle-wrapper-shared.jar
