@@ -4,7 +4,7 @@ import id.teratai.dompet.data.TransactionEntity
 
 object ExportCsv {
     fun toCsv(items: List<TransactionEntity>): String {
-        val header = listOf("id","merchant","date","total","createdAtMs").joinToString(",")
+        val header = listOf("id", "merchant", "date", "total", "createdAtMs").joinToString(",")
         val rows = items.map { tx ->
             listOf(
                 tx.id.toString(),
@@ -14,14 +14,12 @@ object ExportCsv {
                 tx.createdAtMs.toString()
             ).joinToString(",")
         }
-        return (listOf(header) + rows).joinToString("
-")
+        return (listOf(header) + rows).joinToString("\n")
     }
 
     private fun String.csvEscape(): String {
-        val s = this
-        val needs = s.contains(',') || s.contains('"') || s.contains('
-')
-        return if (!needs) s else '"' + s.replace(""", """") + '"'
+        val needs = contains(',') || contains('"') || contains('\n') || contains('\r')
+        if (!needs) return this
+        return "\"" + replace("\"", "\"\"") + "\""
     }
 }
