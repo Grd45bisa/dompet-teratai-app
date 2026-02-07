@@ -260,7 +260,8 @@ fun ReceiptScannerScreen(vm: ReceiptScannerViewModel = viewModel()) {
                     Text(s.parsedSummary, style = MaterialTheme.typography.bodySmall)
 
                     if (showDebug && s.totalModelScore != null) {
-                        Text("Skor model TOTAL: ${String.format("%.3f", s.totalModelScore)}", style = MaterialTheme.typography.bodySmall)
+                        val scoreStr = java.lang.String.format(java.util.Locale.US, "%.3f", s.totalModelScore)
+                        Text("Skor model TOTAL: $scoreStr", style = MaterialTheme.typography.bodySmall)
                     }
 
                     if (showDebug && (s.totalFromHeuristic != null || s.totalFromModel != null)) {
