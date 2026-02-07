@@ -1,7 +1,9 @@
 plugins {
-    id("com.android.application") version "8.5.2"
-    id("org.jetbrains.kotlin.android") version "2.0.20"
-    id("com.google.devtools.ksp") version "2.0.20-1.0.25"
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("com.google.devtools.ksp")
+    // Required for Kotlin 2.x + Compose
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -45,10 +47,6 @@ android {
         compose = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
-    }
-
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -90,13 +88,13 @@ dependencies {
     // ML Kit Text Recognition (Latin)
     implementation("com.google.mlkit:text-recognition:16.0.1")
 
-    // Image loading (for displaying captured receipts)
+    // Image loading
     implementation("io.coil-kt:coil-compose:2.6.0")
 
     // Image cropper
     implementation("com.github.CanHub:Android-Image-Cropper:4.5.0")
 
-    // TFLite (for on-device student model)
+    // TFLite
     implementation("org.tensorflow:tensorflow-lite:2.16.1")
     implementation("org.tensorflow:tensorflow-lite-select-tf-ops:2.16.1")
 }
